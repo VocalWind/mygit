@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" href="css/index.css" />
+		<style>
+			.el-row {
+				margin-bottom: 20px;
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
+			
+			.el-col {
+				border-radius: 4px;
+			}
+			
+			.bg-purple-dark {
+				background: #99a9bf;
+			}
+			
+			.bg-purple {
+				background: #d3dce6;
+			}
+			
+			.bg-purple-light {
+				background: #e5e9f2;
+			}
+			
+			.grid-content {
+				border-radius: 4px;
+				min-height: 36px;
+			}
+			
+			.row-bg {
+				padding: 10px 0;
+				background-color: #f9fafc;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="app">
+			<el-form :inline="true" class="demo-form-inline">
+				<el-form-item label="供应商编码">
+					<el-input v-model="pid" placeholder="供应商编码"></el-input>
+				</el-form-item>
+				<el-form-item label="供应商名称">
+					<el-input v-model="pname" placeholder="供应商名称"></el-input>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" @click="queryall(0)">查询</el-button>
+				</el-form-item>
+				<el-button type="success" @click="dialogVisible=true" class="el-button el-button--danger">添加供应商</el-button>
+				<el-dialog :before-close="handleClose" :visible.sync="dialogVisible" title="新增供应商" width="52%" center>
+					<div id="cnt">
+						<el-form ref="form" :model="form" label-width="90px">
+							<el-form-item label="供应商编码">
+								<el-input v-model="form.pid"></el-input>
+							</el-form-item>
+							<el-form-item label="供应商名称">
+								<el-input v-model="form.pname"></el-input>
+							</el-form-item>
+							<el-form-item label="联系人">
+								<el-input v-model="form.contacts"></el-input>
+							</el-form-item>
+							<el-form-item label="联系电话">
+								<el-input v-model="form.fax"></el-input>
+							</el-form-item>
+							<el-form-item label="描述">
+								<el-input v-model="form.version"></el-input>
+							</el-form-item>
+							<el-form-item label="时间">
+								<el-col :span="11">
+									<el-date-picker v-model="form.createtime" type="date" placeholder="选择日期" style="width: 100%;"></el-date-picker>
+								</el-col>
+							</el-form-item>
+						</el-form>
+					</div>
+					<span slot="footer" class="dialog-footer">
+	    			<el-button @click="dialogVisible=false">取 消</el-button>
+	    			<el-button type="primary" @click="addprovider">确 定</el-button>
+  				</span>
+				</el-dialog>
+
+				<el-dialog :before-close="uhandleClose" :visible.sync="udialogVisible" title="修改供应商" width="52%" center>
+					<div id="cnt">
+						<el-form ref="form" :model="form" label-width="90px">
+							<el-form-item label="供应商编码">
+								<el-input v-model="form.pid"></el-input>
+							</el-form-item>
+							<el-form-item label="供应商名称">
+								<el-input v-model="form.pname"></el-input>
+							</el-form-item>
+							<el-form-item label="联系人">
+								<el-input v-model="form.contacts"></el-input>
+							</el-form-item>
+							<el-form-item label="联系电话">
+								<el-input v-model="form.fax"></el-input>
+							</el-form-item>
+							<el-form-item label="描述">
+								<el-input v-model="form.version"></el-input>
+							</el-form-item>
+							<el-form-item label="时间">
+								<el-col :span="11">
+									<el-date-picker v-model="form.createtime" type="date" placeholder="选择日期" style="width: 100%;"></el-date-picker>
+								</el-col>
+							</el-form-item>
+						</el-form>
+					</div>
+					<span slot="footer" class="dialog-footer">
+	    			<el-button @click="udialogVisible=false">取 消</el-button>
+	    			<el-button type="primary" @click="updateprovider">确 定</el-button>
+  				</span>
+				</el-dialog>
+			</el-form>
+			<template>
+				<el-table :data="tableData" border style="width: 100%">
+					<el-table-column label="序号" width="180">
+						<template slot-scope="kee">
+							{{kee.$index+1}}
+						</template>
+					</el-table-column>
+					<el-table-column prop="pid" label="供应商编码" width="180">
+					</el-table-column>
+					<el-table-column prop="pname" label="供应商名称" width="180">
+					</el-table-column>
+					<el-table-column prop="contacts" label="联系人">
+					</el-table-column>
+					<el-table-column prop="fax" label="传真">
+					</el-table-column>
+					<el-table-column prop="createtime" label="创建时间">
+					</el-table-column>
+					<el-table-column label="操作">
+						<template slot-scope="kee">
+							<el-button type="primary" @click="querybyid(kee.row.pid)" icon="el-icon-edit" circle></el-button>
+							<el-button @click="delrow(kee.$index,kee.row.pid)" type="danger" icon="el-icon-delete" circle></el-button>
+						</template>
+					</el-table-column>
+				</el-table>
+			</template>
+			<el-row>
+				<el-button type="primary" @click="queryall(pageup)">上一页</el-button>
+				<el-button type="primary" @click="queryall(pagenext)">下一页</el-button>
+			</el-row>
+		</div>
+	</body>
+	<script type="text/javascript" src="js/axios.min.js"></script>
+	<script type="text/javascript" src="js/axios_cfg.js"></script>
+	<script type="text/javascript" src="js/vue.js"></script>
+	<script type="text/javascript" src="js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="js/index.js"></script>
+	<script>
+		var _this;
+		var vm = new Vue({
+			el: "#app",
+			data: {
+				dialogVisible: false,
+				udialogVisible: false,
+				isloading: true,
+				pagenum: 0,
+				tableData: [],
+				pid: "",
+				pname: "",
+				pagenext: 0,
+				pageup: 0,
+				counsum: 3,
+				form: {
+					pid: '',
+					pname: '',
+					contacts: '',
+					fax: '',
+					createtime: "",
+					version: "",
+				}
+			},
+			methods: {
+				handleClose(done) {
+					this.$confirm('是否退出?', '提示', {
+						confirmButtonText: '确定',
+						cancelButtonText: '取消',
+						type: 'warning'
+					}).then(() => {
+						done(); //关闭	
+					}).catch(() => {
+
+					});
+
+				},
+				uhandleClose(done) {
+					this.$confirm('是否退出?', '提示', {
+						confirmButtonText: '确定',
+						cancelButtonText: '取消',
+						type: 'warning'
+					}).then(() => {
+						done(); //关闭	
+					}).catch(() => {
+
+					});
+
+				},
+				handlerOpen() {
+					$("#cnt").load('table.html');
+				},
+				delrow(index, pid) {
+					this.$confirm('此操作将永久删除该数据, 是否继续?', '提示', {
+						confirmButtonText: '确定',
+						cancelButtonText: '取消',
+						type: 'warning'
+					}).then(() => {
+						axios({
+							method: 'delete',
+							url: `http://127.0.0.1:8080/api/provider/delperson/${pid}`,
+						}).then(function(response) {
+							if(response.data.code == 200) {
+								_this.tableData.splice(index, 1);
+								_this.$message({
+									type: 'success',
+									message: '删除成功!'
+								});
+							}
+						});
+					}).catch(() => {
+						this.$message({
+							type: 'info',
+							message: '已取消删除'
+						});
+					});
+				},
+				queryall(pagenum) {
+					console.log(pagenum);
+						axios({
+							method: 'post',
+							url: "http://127.0.0.1:8080/api/provider/queryall",
+							data: {
+								"pagenum": pagenum,
+								"pagesize": 3,
+								"pid": _this.pid == "" ? null : _this.pid,
+								"pname": _this.pname == "" ? null : _this.pname
+							}
+						}).then(function(response) {
+							_this.counsum = response.data.pages;
+							_this.pagenum = response.data.pageNum;
+							_this.pagenext = response.data.nextPage == 0 ? response.data.pageNum : response.data.nextPage;;
+							_this.pageup = response.data.prePage == 0 ? 1 : response.data.prePage;
+							_this.tableData = [];
+							$.each(response.data.list, function(i, obj) {
+								_this.tableData.push(obj);
+							})
+						});
+				},
+				querybyid(pid) {
+					axios({
+						method: 'get',
+						url: `http://127.0.0.1:8080/api/provider/${pid}`
+					}).then(function(response) {
+						_this.form = response.data;
+						_this.udialogVisible = true;
+					});
+				},
+				updateprovider() {
+					axios({
+						method: 'post',
+						url: "http://127.0.0.1:8080/api/provider/updateproiver",
+						data: {
+							"pid": _this.form.pid,
+							"pname": _this.form.pname,
+							"contacts": _this.form.contacts,
+							"fax": _this.form.fax,
+							"createtime": _this.form.createtime,
+							"version": _this.form.version
+						}
+					}).then(function(response) {
+						if(response.data.code == 200) {
+							_this.$message({
+          						message: '修改成功',
+          						type: 'success'
+        					});
+							_this.udialogVisible = false;
+							_this.queryall(1);
+						}
+					});
+				},
+				addprovider() {
+					axios({
+						method: 'post',
+						url: "http://127.0.0.1:8080/api/provider/addproiver",
+						data: {
+							"pid": _this.form.pid,
+							"pname": _this.form.pname,
+							"contacts": _this.form.contacts,
+							"fax": _this.form.fax,
+							"createtime": _this.form.createtime,
+							"version": _this.form.version
+						}
+					}).then(function(response) {
+						if(response.data.code == 200) {
+							_this.$message({
+          						message: '新增成功',
+          						type: 'success'
+        					});
+							_this.dialogVisible = false;
+							_this.queryall(1);
+						}
+					});
+				}
+			},
+			mounted() {
+				_this = this;
+				this.queryall(1);
+			}
+		})
+	</script>
+
+</html>
